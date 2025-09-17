@@ -1,0 +1,49 @@
+proxy:
+  endpoints:
+    /github-api:
+      target: https://api.github.com
+      headers:
+        Authorization: token ${PROXY_GITHUB_TOKEN}
+        Accept: application/vnd.github.v3+json
+        User-Agent: Harness-IDP-Service-Access
+      changeOrigin: true
+      pathRewrite:
+        '^/proxy/github-api': ''
+
+catalog:
+  providers:
+    github:
+      service-access-provider:
+        organization: your-org
+        catalogPath: /.harness/catalog-info.yaml
+        filters:
+          repository: permissions-database
+        schedule:
+          frequency: { minutes: 15 }
+          timeout: { minutes: 2 }
+
+backend:
+  auth:
+    providers:
+      github:
+        development:
+          clientId: ${AUTH_GITHUB_CLIENT_ID}
+          clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+
+integrations:
+  github:
+    - host: github.com
+      token: ${INTEGRATION_GITHUB_TOKEN}
+
+dynamicPlugins:
+  plugins:
+    - package: '@roadiehq/backstage-plugin-utils'
+      disabled: false
+    - package: '@backstage/plugin-scaffolder-backend-module-http-requests'
+      disabled: false
+
+scaffolder:
+  defaultAuthor:
+    name: Harness IDP Service Access
+    email: service-access@harness.io
+  defaultCommitMessage: 'Service access request via Harness IDP'

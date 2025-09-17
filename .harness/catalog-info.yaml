@@ -1,0 +1,51 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: user-group-permissions-system
+  title: User Group Permissions Management System
+  description: GitHub-based user group permissions query system with Harness IDP integration
+  annotations:
+    github.com/project-slug: your-org/permissions-database
+    harness.io/project-url: https://app.harness.io/ng/account/your-account/home/orgs/your-org/projects/your-project
+  tags:
+    - security
+    - permissions
+    - user-groups
+    - github
+    - harness-idp
+  links:
+    - url: https://github.com/your-org/permissions-database
+      title: GitHub Repository
+      icon: github
+    - url: https://app.harness.io/ng/account/your-account/home/orgs/your-org/projects/your-project
+      title: Harness Project
+      icon: harness
+spec:
+  type: system
+  lifecycle: production
+  owner: security-team
+  dependsOn:
+    - resource:github-api
+    - resource:harness-platform
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: github-api
+  title: GitHub API
+  description: GitHub REST API for accessing permissions data
+spec:
+  type: api
+  owner: platform-team
+  dependsOn: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: harness-platform
+  title: Harness Platform
+  description: Harness CI/CD and IDP platform
+spec:
+  type: platform
+  owner: platform-team
+  dependsOn: []

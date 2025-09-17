@@ -1,0 +1,132 @@
+{
+  "awsServices": {
+    "ec2": {
+      "name": "Amazon EC2",
+      "description": "Virtual servers in the cloud"
+    },
+    "rds": {
+      "name": "Amazon RDS",
+      "description": "Managed relational database service"
+    },
+    "s3": {
+      "name": "Amazon S3",
+      "description": "Object storage service"
+    },
+    "vpc": {
+      "name": "Amazon VPC",
+      "description": "Virtual private cloud networking"
+    },
+    "iam": {
+      "name": "AWS IAM",
+      "description": "Identity and access management"
+    },
+    "lambda": {
+      "name": "AWS Lambda",
+      "description": "Serverless compute service"
+    },
+    "cloudformation": {
+      "name": "AWS CloudFormation",
+      "description": "Infrastructure as code"
+    },
+    "route53": {
+      "name": "Amazon Route 53",
+      "description": "DNS web service"
+    },
+    "cloudwatch": {
+      "name": "Amazon CloudWatch",
+      "description": "Monitoring and observability"
+    },
+    "dynamodb": {
+      "name": "Amazon DynamoDB",
+      "description": "NoSQL database service"
+    },
+    "kms": {
+      "name": "AWS KMS",
+      "description": "Key management service"
+    },
+    "backup": {
+      "name": "AWS Backup",
+      "description": "Centralized backup service"
+    },
+    "guardduty": {
+      "name": "Amazon GuardDuty",
+      "description": "Threat detection service"
+    },
+    "securityhub": {
+      "name": "AWS Security Hub",
+      "description": "Security posture management"
+    },
+    "cloudtrail": {
+      "name": "AWS CloudTrail",
+      "description": "API call logging and auditing"
+    },
+    "config": {
+      "name": "AWS Config",
+      "description": "Resource configuration tracking"
+    },
+    "cloudfront": {
+      "name": "Amazon CloudFront",
+      "description": "Content delivery network"
+    },
+    "elb": {
+      "name": "Elastic Load Balancing",
+      "description": "Load balancing service"
+    },
+    "apigateway": {
+      "name": "Amazon API Gateway",
+      "description": "API management service"
+    },
+    "directconnect": {
+      "name": "AWS Direct Connect",
+      "description": "Dedicated network connection"
+    },
+    "redshift": {
+      "name": "Amazon Redshift",
+      "description": "Data warehouse service"
+    },
+    "glue": {
+      "name": "AWS Glue",
+      "description": "ETL service"
+    },
+    "athena": {
+      "name": "Amazon Athena",
+      "description": "Interactive query service"
+    },
+    "sagemaker": {
+      "name": "Amazon SageMaker",
+      "description": "Machine learning platform"
+    },
+    "quicksight": {
+      "name": "Amazon QuickSight",
+      "description": "Business intelligence service"
+    },
+    "kinesis": {
+      "name": "Amazon Kinesis",
+      "description": "Real-time data streaming"
+    },
+    "ecs": {
+      "name": "Amazon ECS",
+      "description": "Container orchestration service"
+    },
+    "eks": {
+      "name": "Amazon EKS",
+      "description": "Managed Kubernetes service"
+    },
+    "codebuild": {
+      "name": "AWS CodeBuild",
+      "description": "Build service"
+    },
+    "codedeploy": {
+      "name": "AWS CodeDeploy",
+      "description": "Deployment service"
+    },
+    "codepipeline": {
+      "name": "AWS CodePipeline",
+      "description": "CI/CD pipeline service"
+    },
+    "cost-explorer": {
+      "name": "AWS Cost Explorer",
+      "description": "Cost analysis and reporting"
+    }
+  }
+}

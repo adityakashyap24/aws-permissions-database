@@ -1,0 +1,100 @@
+{
+  "userGroups": {
+    "ug1": {
+      "name": "Cloud Infrastructure Admins",
+      "description": "Full AWS infrastructure management access",
+      "awsServices": ["ec2", "rds", "s3", "vpc", "iam", "lambda", "cloudformation", "route53"],
+      "environment": ["dev", "staging", "prod"],
+      "metadata": {
+        "created": "2024-01-15",
+        "lastUpdated": "2024-03-20",
+        "owner": "infrastructure-team",
+        "costCenter": "IT-001"
+      }
+    },
+    "ug2": {
+      "name": "Development Team",
+      "description": "Development environment access with limited services",
+      "awsServices": ["ec2", "s3", "lambda", "cloudwatch", "dynamodb"],
+      "environment": ["dev", "staging"],
+      "metadata": {
+        "created": "2024-02-01",
+        "lastUpdated": "2024-03-15",
+        "owner": "development-team",
+        "costCenter": "DEV-001"
+      }
+    },
+    "ug3": {
+      "name": "Database Administrators",
+      "description": "Database and storage service management",
+      "awsServices": ["rds", "dynamodb", "s3", "backup", "cloudwatch", "kms"],
+      "environment": ["dev", "staging", "prod"],
+      "metadata": {
+        "created": "2024-01-20",
+        "lastUpdated": "2024-03-18",
+        "owner": "database-team",
+        "costCenter": "DBA-001"
+      }
+    },
+    "ug4": {
+      "name": "Security Team",
+      "description": "Security services and compliance management",
+      "awsServices": ["iam", "kms", "guardduty", "securityhub", "cloudtrail", "config"],
+      "environment": ["dev", "staging", "prod"],
+      "metadata": {
+        "created": "2024-02-10",
+        "lastUpdated": "2024-03-22",
+        "owner": "security-team",
+        "costCenter": "SEC-001"
+      }
+    },
+    "ug5": {
+      "name": "Network Engineers",
+      "description": "Networking and connectivity services",
+      "awsServices": ["vpc", "route53", "cloudfront", "elb", "apigateway", "directconnect"],
+      "environment": ["dev", "staging", "prod"],
+      "metadata": {
+        "created": "2024-02-15",
+        "lastUpdated": "2024-03-25",
+        "owner": "network-team",
+        "costCenter": "NET-001"
+      }
+    },
+    "ug6": {
+      "name": "Analytics Team",
+      "description": "Data analytics and machine learning services",
+      "awsServices": ["redshift", "glue", "athena", "sagemaker", "quicksight", "kinesis"],
+      "environment": ["dev", "staging"],
+      "metadata": {
+        "created": "2024-02-20",
+        "lastUpdated": "2024-03-28",
+        "owner": "analytics-team",
+        "costCenter": "ANALYTICS-001"
+      }
+    },
+    "ug7": {
+      "name": "DevOps Engineers",
+      "description": "CI/CD and deployment automation services",
+      "awsServices": ["ec2", "ecs", "eks", "codebuild", "codedeploy", "codepipeline", "lambda"],
+      "environment": ["dev", "staging", "prod"],
+      "metadata": {
+        "created": "2024-03-01",
+        "lastUpdated": "2024-03-30",
+        "owner": "devops-team",
+        "costCenter": "DEVOPS-001"
+      }
+    },
+    "ug8": {
+      "name": "Read-Only Auditors",
+      "description": "Read-only access for compliance and auditing",
+      "awsServices": ["cloudtrail", "config", "cloudwatch", "cost-explorer"],
+      "environment": ["prod"],
+      "metadata": {
+        "created": "2024-03-05",
+        "lastUpdated": "2024-03-31",
+        "owner": "compliance-team",
+        "costCenter": "AUDIT-001"
+      }
+    }
+  }
+}
