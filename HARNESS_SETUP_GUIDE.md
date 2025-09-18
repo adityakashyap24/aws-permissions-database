@@ -203,12 +203,27 @@ $filter($keys(awsServices), function($serviceId) {
 4. **Validate JSON**: Ensure GitHub files have valid JSON syntax
 
 ### 7.4 Dynamic Picker Not Working
-**Problem**: SelectFieldFromApi not populating
+**Problem**: SelectFieldFromApi not populating or JSON parsing errors
 **Solutions**:
-1. **Check Proxy**: Verify proxy endpoint configuration
-2. **Test API Path**: Manually test the API path
-3. **Review Headers**: Ensure Accept header is correct
-4. **Check Permissions**: Verify GitHub token has repo access
+1. **Check Proxy Configuration**: Ensure paths use correct Harness IDP format:
+   ```yaml
+   # Correct proxy path format for Harness IDP
+   path: "api/proxy/github-raw/org/repo/main/file.json"
+   ```
+2. **Verify arraySelector**: Must match JSON structure:
+   ```yaml
+   # For aws-services.json
+   arraySelector: "awsServices"
+   valueSelector: "$key"
+   labelSelector: "name"
+   ```
+3. **Test API Access**: Manually test proxy endpoints:
+   ```bash
+   # Test the proxy endpoint (replace ACCOUNT_ID with your actual account ID)
+   curl "https://idp.harness.io/Npsd6WrETY-Baq6iHeOHGw/idp/api/proxy/github-raw/org/repo/main/permissions-data/aws-services.json"
+   ```
+4. **Check Authentication**: Ensure GITHUB_TOKEN is accessible
+5. **Validate JSON**: Ensure GitHub files have valid JSON syntax
 
 ---
 

@@ -24,7 +24,7 @@ spec:
           title: GitHub Organization
           type: string
           description: GitHub organization containing the AWS permissions database
-          default: your-org
+          default: adityakashyap24
           ui:autofocus: true
         githubRepo:
           title: GitHub Repository
@@ -42,15 +42,10 @@ spec:
           description: Choose your user group to see available AWS services
           ui:field: SelectFieldFromApi
           ui:options:
-            path: proxy/github-api/repos/${{ parameters.githubOrg }}/${{ parameters.githubRepo }}/contents/permissions-data/user-groups.json
-            method: GET
-            headers:
-              Accept: application/vnd.github.v3.raw
-            valueSelector: "userGroups"
-            arraySelector: "$"
-            valueField: "$key"
-            labelField: "name"
-            descriptionField: "description"
+            path: proxy/github-raw/{{ parameters.githubOrg }}/{{ parameters.githubRepo }}/main/permissions-data/user-groups.json
+            method: GET            
+            valueSelector: "value"
+            labelSelector: "label"
 
     - title: AWS Service Selection
       required:
@@ -66,10 +61,8 @@ spec:
           uniqueItems: true
           ui:field: SelectFieldFromApi
           ui:options:
-            path: proxy/github-api/repos/${{ parameters.githubOrg }}/${{ parameters.githubRepo }}/contents/permissions-data/aws-services.json
+            path: proxy/github-raw/{{ parameters.githubOrg }}/{{ parameters.githubRepo }}/main/permissions-data/aws-services.json
             method: GET
-            headers:
-              Accept: application/vnd.github.v3.raw
             dependencies:
               selectedUserGroup: ${{ parameters.selectedUserGroup }}
             valueSelector: "awsServices"
@@ -78,7 +71,7 @@ spec:
             labelField: "name"
             descriptionField: "description"
             filterExpression: |
-              $userGroupData := $$.userGroups["${{ parameters.selectedUserGroup }}"];
+              $userGroupData := $.userGroups["${{ parameters.selectedUserGroup }}"];
               $userAWSServices := $userGroupData.awsServices;
               $awsServices := awsServices;
               $filter($keys($awsServices), function($serviceId) {
@@ -120,10 +113,9 @@ spec:
       action: http:backstage:request
       input:
         method: GET
-        url: https://api.github.com/repos/${{ parameters.githubOrg }}/${{ parameters.githubRepo }}/contents/permissions-data/user-groups.json
+        url: https://raw.githubusercontent.com/${{ parameters.githubOrg }}/${{ parameters.githubRepo }}/main/permissions-data/user-groups.json
         headers:
           Authorization: token <+secrets.getValue("github_token")>
-          Accept: application/vnd.github.v3.raw
           User-Agent: Harness-IDP-AWS-Access
 
     - id: fetch-aws-services
@@ -131,10 +123,9 @@ spec:
       action: http:backstage:request
       input:
         method: GET
-        url: https://api.github.com/repos/${{ parameters.githubOrg }}/${{ parameters.githubRepo }}/contents/permissions-data/aws-services.json
+        url: https://raw.githubusercontent.com/${{ parameters.githubOrg }}/${{ parameters.githubRepo }}/main/permissions-data/aws-services.json
         headers:
           Authorization: token <+secrets.getValue("github_token")>
-          Accept: application/vnd.github.v3.raw
           User-Agent: Harness-IDP-AWS-Access
 
     - id: validate-aws-service-access

@@ -1,14 +1,22 @@
 proxy:
   endpoints:
+    # GitHub API endpoint for dynamic data loading
     /github-api:
       target: https://api.github.com
       headers:
-        Authorization: token ${PROXY_GITHUB_TOKEN}
+        Authorization: token ${GITHUB_TOKEN}
         Accept: application/vnd.github.v3+json
-        User-Agent: Harness-IDP-Service-Access
-      changeOrigin: true
+        User-Agent: Harness-IDP-AWS-Access
       pathRewrite:
         '^/proxy/github-api': ''
+
+    # GitHub Raw Content endpoint for direct file access
+    /github-raw:
+      target: https://raw.githubusercontent.com
+      headers:
+        User-Agent: Harness-IDP-AWS-Access
+      pathRewrite:
+        '^/proxy/github-raw': ''
 
 catalog:
   providers:
