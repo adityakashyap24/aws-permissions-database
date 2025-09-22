@@ -2,41 +2,19 @@
   {
     "value": "ug1",
     "label": "Cloud Infrastructure Admins",
-    "description": "Full AWS infrastructure management access"
+    "description": "Full AWS infrastructure management access",
+    "services" : ["ec2","s3"]
   },
   {
     "value": "ug2", 
     "label": "Development Team",
-    "description": "Development environment access with limited services"
+    "description": "Development environment access with limited services",
+    "services" : ["ec2","alb"]
   },
   {
     "value": "ug3",
     "label": "Database Administrators", 
-    "description": "Database and storage service management"
-  },
-  {
-    "value": "ug4",
-    "label": "Security Team",
-    "description": "Security services and compliance management"
-  },
-  {
-    "value": "ug5",
-    "label": "Network Engineers",
-    "description": "Networking and connectivity services"
-  },
-  {
-    "value": "ug6",
-    "label": "Analytics Team", 
-    "description": "Data analytics and machine learning services"
-  },
-  {
-    "value": "ug7",
-    "label": "DevOps Engineers",
-    "description": "CI/CD and deployment automation services"
-  },
-  {
-    "value": "ug8",
-    "label": "Read-Only Auditors",
-    "description": "Read-only access for compliance and auditing"
+    "description": "Database and storage service management",
+    "services" : ["ec2","rds"]
   }
 ]

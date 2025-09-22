@@ -53,14 +53,36 @@ git push -u origin main
 
 ### 2.2 Create Harness Secrets
 1. **Navigate**: Account Settings → Account Resources → Secrets
-2. **Create Secret**:
+2. **Create GitHub Secret**:
    ```yaml
    Secret Type: Text
    Secret Name: github_token
    Secret Value: [your GitHub token]
    ```
+3. **Create Harness API Secret**:
+   ```yaml
+   Secret Type: Text
+   Secret Name: harness_api_token
+   Secret Value: [your Harness API token]
+   ```
+4. **Create Harness API Key Secret** (if required):
+   ```yaml
+   Secret Type: Text
+   Secret Name: harness_api_key
+   Secret Value: [your Harness API key]
+   ```
 
-### 2.3 Enable Required Harness Modules
+### 2.3 Generate Harness API Token
+1. **Navigate**: Account Settings → Account Resources → API Keys
+2. **Create New API Key**:
+   ```yaml
+   Name: IDP-User-Access
+   Description: API key for IDP to access user details
+   Permissions: User Management, User Groups
+   ```
+3. **Copy the token** - you'll need it for the secret above
+
+### 2.4 Enable Required Harness Modules
 Ensure these modules are enabled:
 - **Internal Developer Portal (IDP)**
 - **Continuous Integration (CI)** - for workflow execution
@@ -83,7 +105,7 @@ Ensure these modules are enabled:
 
 ### 3.2 Setup Proxy Configuration
 1. **Navigate**: IDP → Admin → Settings → Proxy
-2. **Add Proxy Endpoint**:
+2. **Add GitHub API Proxy Endpoint**:
    ```yaml
    Endpoint: /github-api
    Target: https://api.github.com
@@ -91,9 +113,29 @@ Ensure these modules are enabled:
      Authorization: token <+secrets.getValue("github_token")>
      Accept: application/vnd.github.v3+json
      User-Agent: Harness-IDP-AWS-Access
-   Change Origin: true
    Path Rewrite:
      "^/proxy/github-api": ""
+   ```
+3. **Add GitHub Raw Content Proxy Endpoint**:
+   ```yaml
+   Endpoint: /github-raw
+   Target: https://raw.githubusercontent.com
+   Headers:
+     User-Agent: Harness-IDP-AWS-Access
+   Path Rewrite:
+     "^/proxy/github-raw": ""
+   ```
+4. **Add Harness API Proxy Endpoint**:
+   ```yaml
+   Endpoint: /harness-api
+   Target: https://app.harness.io
+   Headers:
+     Authorization: Bearer <+secrets.getValue("harness_api_token")>
+     Accept: application/json
+     Content-Type: application/json
+     x-api-key: <+secrets.getValue("harness_api_key")>
+   Path Rewrite:
+     "^/proxy/harness-api": "/gateway"
    ```
 
 ---

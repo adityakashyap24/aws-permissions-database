@@ -18,6 +18,17 @@ proxy:
       pathRewrite:
         '^/proxy/github-raw': ''
 
+    # Harness API endpoint for user management
+    /harness-api:
+      target: https://app.harness.io
+      headers:
+        Authorization: Bearer ${HARNESS_API_TOKEN}
+        Accept: application/json
+        Content-Type: application/json
+        x-api-key: ${HARNESS_API_KEY}
+      pathRewrite:
+        '^/proxy/harness-api': '/gateway'
+
 catalog:
   providers:
     github:
