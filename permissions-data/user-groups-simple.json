@@ -1,0 +1,14 @@
+[
+  {
+    "value": "ug1",
+    "label": "Cloud Infrastructure Admins"
+  },
+  {
+    "value": "ug2", 
+    "label": "Development Team"
+  },
+  {
+    "value": "ug3",
+    "label": "Database Administrators"
+  }
+]
