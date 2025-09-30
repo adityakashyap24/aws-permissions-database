@@ -1,9 +1,0 @@
-{
-  "userGroupMappings": {
-    "aditya.kashyap@harness.io": ["ug1", "ug2"],
-    "user2@company.com": ["ug2", "ug3"],
-    "admin@company.com": ["ug1", "ug2", "ug3"],
-    "developer@company.com": ["ug2"],
-    "dba@company.com": ["ug3"]
-  }
-}
