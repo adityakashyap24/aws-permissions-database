@@ -1,68 +1,16 @@
 proxy:
   endpoints:
-    # GitHub API endpoint for dynamic data loading
+    # Existing GitHub API endpoint
     /github-api:
       target: https://api.github.com
-      headers:
-        Authorization: token ${GITHUB_TOKEN}
-        Accept: application/vnd.github.v3+json
-        User-Agent: Harness-IDP-AWS-Access
       pathRewrite:
-        '^/proxy/github-api': ''
+        /api/proxy/github-api/?: /
+      headers:
+        Authorization: token ${PROXY_GITHUB_TOKEN}
 
-    # GitHub Raw Content endpoint for direct file access
     /github-raw:
       target: https://raw.githubusercontent.com
-      headers:
-        User-Agent: Harness-IDP-AWS-Access
       pathRewrite:
-        '^/proxy/github-raw': ''
-
-    # Harness API endpoint for user management
-    /harness-api:
-      target: https://app.harness.io
+        "/api/proxy/github-raw/?": ""
       headers:
-        Authorization: Bearer ${HARNESS_API_TOKEN}
-        Accept: application/json
-        Content-Type: application/json
-        x-api-key: ${HARNESS_API_KEY}
-      pathRewrite:
-        '^/proxy/harness-api': '/gateway'
-
-catalog:
-  providers:
-    github:
-      service-access-provider:
-        organization: your-org
-        catalogPath: /.harness/catalog-info.yaml
-        filters:
-          repository: permissions-database
-        schedule:
-          frequency: { minutes: 15 }
-          timeout: { minutes: 2 }
-
-backend:
-  auth:
-    providers:
-      github:
-        development:
-          clientId: ${AUTH_GITHUB_CLIENT_ID}
-          clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
-
-integrations:
-  github:
-    - host: github.com
-      token: ${INTEGRATION_GITHUB_TOKEN}
-
-dynamicPlugins:
-  plugins:
-    - package: '@roadiehq/backstage-plugin-utils'
-      disabled: false
-    - package: '@backstage/plugin-scaffolder-backend-module-http-requests'
-      disabled: false
-
-scaffolder:
-  defaultAuthor:
-    name: Harness IDP Service Access
-    email: service-access@harness.io
-  defaultCommitMessage: 'Service access request via Harness IDP'
+        Authorization: token ${PROXY_GITHUB_TOKEN}        
