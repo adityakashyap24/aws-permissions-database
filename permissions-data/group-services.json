@@ -1,14 +1,17 @@
-{
-  "ug1": {
+[
+  {
+    "groupId": "ug1",
     "label": "Cloud Infrastructure Admins",
     "services": ["ec2", "s3"]
   },
-  "ug2": {
+  {
+    "groupId": "ug2",
     "label": "Development Team", 
     "services": ["ec2", "alb"]
   },
-  "ug3": {
+  {
+    "groupId": "ug3",
     "label": "Database Administrators",
     "services": ["ec2", "rds"]
   }
-}
+]
