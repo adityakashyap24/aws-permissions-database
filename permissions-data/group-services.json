@@ -1,0 +1,14 @@
+{
+  "ug1": {
+    "label": "Cloud Infrastructure Admins",
+    "services": ["ec2", "s3"]
+  },
+  "ug2": {
+    "label": "Development Team", 
+    "services": ["ec2", "alb"]
+  },
+  "ug3": {
+    "label": "Database Administrators",
+    "services": ["ec2", "rds"]
+  }
+}
