@@ -29,6 +29,11 @@ spec:
       required:
         - projectName
       properties:
+        token:
+          title: Harness Token
+          type: string
+          ui:widget: password
+          ui:field: HarnessAuthToken
         projectName:
           title: Project Name
           type: string
@@ -183,7 +188,7 @@ spec:
       name: Trigger AWS Service Provisioning Pipeline
       action: trigger:harness-custom-pipeline
       input:
-        pipelineId: aws-service-provisioning-pipeline
+        url: https://app.harness.io/ng/account/Npsd6WrETY-Baq6iHeOHGw/all/orgs/default/projects/CDK/pipelines/CDK_Demo/pipeline-studio/?storeType=INLINE
         inputset:
           projectName: ${{ parameters.projectName }}
           projectDescription: ${{ parameters.projectDescription }}
@@ -192,6 +197,7 @@ spec:
           userGroup: ${{ parameters.selectedUserGroup }}
           selectedServices: ${{ parameters.selectedAWSServices }}
           serviceConfigurations: ${{ parameters.serviceConfigurations }}
+        apikey: ${{ parameters.token }}
     - id: log-completion
       name: Log Workflow Completion
       action: debug:log
