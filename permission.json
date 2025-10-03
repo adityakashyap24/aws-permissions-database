@@ -1,0 +1,7 @@
+[
+    {
+        "UserGroupName": "ug1",
+        "UserEmails": ["emails"],
+        "AWSServices": ["ec2","s3"]
+    }
+]

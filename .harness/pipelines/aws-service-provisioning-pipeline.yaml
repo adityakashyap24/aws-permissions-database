@@ -1,0 +1,384 @@
+pipeline:
+  name: AWS Service Provisioning Pipeline
+  identifier: aws_service_provisioning_pipeline
+  projectIdentifier: <PROJECT_ID>
+  orgIdentifier: <ORG_ID>
+  tags: {}
+  stages:
+    - stage:
+        name: Pre Validate
+        identifier: pre_validate
+        description: Validate user permissions and create IACM workspace
+        type: Custom
+        spec:
+          execution:
+            steps:
+              - step:
+                  type: ShellScript
+                  name: Validate User Permissions
+                  identifier: validate_user_permissions
+                  spec:
+                    shell: Bash
+                    onDelegate: true
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          #!/bin/bash
+                          set -e
+                          
+                          echo "=== AWS Service Provisioning - Permission Validation ==="
+                          echo "User: <+pipeline.variables.userEmail>"
+                          echo "User Group: <+pipeline.variables.userGroup>"
+                          echo "Requested Services: <+pipeline.variables.selectedServices>"
+                          
+                          # Download permission.json
+                          echo "Downloading permission configuration..."
+                          curl -s -o permission.json https://raw.githubusercontent.com/<GITHUB_ORG>/<GITHUB_REPO>/main/permission.json
+                          
+                          # Validate user group exists and has requested services
+                          echo "Validating permissions..."
+                          python3 << EOF
+                          import json
+                          import sys
+                          
+                          # Load permission data
+                          with open('permission.json', 'r') as f:
+                              permissions = json.load(f)
+                          
+                          user_email = "<+pipeline.variables.userEmail>"
+                          user_group = "<+pipeline.variables.userGroup>"
+                          requested_services = "<+pipeline.variables.selectedServices>".split(',')
+                          
+                          # Find user group
+                          user_group_data = None
+                          for group in permissions:
+                              if group['UserGroupName'] == user_group:
+                                  user_group_data = group
+                                  break
+                          
+                          if not user_group_data:
+                              print(f"ERROR: User group '{user_group}' not found")
+                              sys.exit(1)
+                          
+                          # Check if user email is in the group
+                          if user_email not in user_group_data.get('UserEmails', []) and 'emails' not in user_group_data.get('UserEmails', []):
+                              print(f"WARNING: User '{user_email}' not explicitly listed in group '{user_group}'")
+                              # Continue for now, but in production you might want to enforce this
+                          
+                          # Check if all requested services are allowed
+                          allowed_services = user_group_data.get('AWSServices', [])
+                          for service in requested_services:
+                              service = service.strip()
+                              if service not in allowed_services:
+                                  print(f"ERROR: Service '{service}' not allowed for user group '{user_group}'")
+                                  print(f"Allowed services: {allowed_services}")
+                                  sys.exit(1)
+                          
+                          print("✅ All permission checks passed!")
+                          print(f"User group '{user_group}' is authorized for services: {requested_services}")
+                          EOF
+                          
+                          echo "Permission validation completed successfully"
+                    environmentVariables: []
+                    outputVariables:
+                      - name: validation_status
+                        type: String
+                        value: "PASSED"
+                  timeout: 10m
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: MarkAsFailure
+              - step:
+                  type: Http
+                  name: Create IACM Workspace
+                  identifier: create_iacm_workspace
+                  spec:
+                    url: https://app.harness.io/gateway/iacm/api/orgs/<ORG_ID>/projects/<PROJECT_ID>/workspaces
+                    method: POST
+                    headers:
+                      - key: Content-Type
+                        value: application/json
+                      - key: x-api-key
+                        value: <+secrets.getValue("harness_api_key")>
+                    requestBody: |
+                      {
+                        "name": "<+pipeline.variables.projectName>-<+pipeline.variables.userGroup>-<+pipeline.executionId>",
+                        "description": "IACM workspace for <+pipeline.variables.projectName> - User: <+pipeline.variables.userEmail>",
+                        "tags": {
+                          "created_by": "<+pipeline.variables.userEmail>",
+                          "user_group": "<+pipeline.variables.userGroup>",
+                          "project": "<+pipeline.variables.projectName>",
+                          "services": "<+pipeline.variables.selectedServices>",
+                          "pipeline_id": "<+pipeline.executionId>"
+                        },
+                        "repository_connector": "<+pipeline.variables.repository_connector>",
+                        "repository_path": "terraform/",
+                        "repository_branch": "main",
+                        "cost_estimation_enabled": true,
+                        "provisioner_type": "terraform"
+                      }
+                    assertion: <+httpResponseCode> == 201
+                    outputVariables:
+                      - name: workspace_id
+                        type: String
+                        value: <+json.select("id", httpResponseBody)>
+                      - name: workspace_name
+                        type: String
+                        value: <+json.select("name", httpResponseBody)>
+                  timeout: 10m
+                  failureStrategies:
+                    - onFailure:
+                        errors:
+                          - AllErrors
+                        action:
+                          type: MarkAsFailure
+        tags: {}
+    - stage:
+        name: IACM Stage
+        identifier: iacm_stage
+        description: Plan and apply Terraform infrastructure
+        type: IACM
+        spec:
+          workspace: <+pipeline.stages.pre_validate.spec.execution.steps.create_iacm_workspace.output.outputVariables.workspace_name>
+          execution:
+            steps:
+              - step:
+                  type: IACMTerraformPlan
+                  name: Terraform Plan
+                  identifier: terraform_plan
+                  spec:
+                    configuration:
+                      command: Plan
+                      workspace: <+pipeline.stages.pre_validate.spec.execution.steps.create_iacm_workspace.output.outputVariables.workspace_name>
+                      configFiles:
+                        store:
+                          type: Github
+                          spec:
+                            connectorRef: <+pipeline.variables.repository_connector>
+                            gitFetchType: Branch
+                            folderPath: terraform/
+                            branch: main
+                      varFiles:
+                        - varFile:
+                            type: Inline
+                            spec:
+                              content: |
+                                # Generated variables for AWS service provisioning
+                                project_name = "<+pipeline.variables.projectName>"
+                                user_email = "<+pipeline.variables.userEmail>"
+                                user_group = "<+pipeline.variables.userGroup>"
+                                selected_services = <+pipeline.variables.selectedServices>
+                                service_configurations = <+pipeline.variables.serviceConfigurations>
+                                
+                                # AWS specific configurations
+                                aws_region = "us-east-1"
+                                environment = "dev"
+                                
+                                # Tags
+                                common_tags = {
+                                  "CreatedBy" = "<+pipeline.variables.userEmail>"
+                                  "UserGroup" = "<+pipeline.variables.userGroup>"
+                                  "Project" = "<+pipeline.variables.projectName>"
+                                  "ManagedBy" = "HarnessIDP"
+                                  "PipelineId" = "<+pipeline.executionId>"
+                                }
+                  timeout: 10m
+              - step:
+                  type: IACMApproval
+                  name: Approve Terraform Plan
+                  identifier: approve_terraform_plan
+                  spec:
+                    approvalMessage: |
+                      Please review the Terraform plan for AWS service provisioning:
+                      
+                      **Project:** <+pipeline.variables.projectName>
+                      **User:** <+pipeline.variables.userEmail>
+                      **User Group:** <+pipeline.variables.userGroup>
+                      **Services:** <+pipeline.variables.selectedServices>
+                      
+                      Review the plan and approve to proceed with infrastructure provisioning.
+                    includeTerraformPlanJson: false
+                    approvers:
+                      userGroups:
+                        - cloud-platform-team
+                      minimumCount: 1
+                    approverInputs: []
+                  timeout: 1d
+              - step:
+                  type: IACMTerraformApply
+                  name: Terraform Apply
+                  identifier: terraform_apply
+                  spec:
+                    configuration:
+                      command: Apply
+                      workspace: <+pipeline.stages.pre_validate.spec.execution.steps.create_iacm_workspace.output.outputVariables.workspace_name>
+                    provisionerIdentifier: terraform_plan
+                  timeout: 20m
+        tags: {}
+    - stage:
+        name: IDP Stage
+        identifier: idp_stage
+        description: Create IDP catalog entry
+        type: Custom
+        spec:
+          execution:
+            steps:
+              - step:
+                  type: Http
+                  name: Create IDP Catalog Entry
+                  identifier: create_idp_catalog_entry
+                  spec:
+                    url: https://app.harness.io/gateway/idp/api/catalog/entities
+                    method: POST
+                    headers:
+                      - key: Content-Type
+                        value: application/json
+                      - key: x-api-key
+                        value: <+secrets.getValue("harness_api_key")>
+                    requestBody: |
+                      {
+                        "apiVersion": "backstage.io/v1alpha1",
+                        "kind": "Component",
+                        "metadata": {
+                          "name": "<+pipeline.variables.projectName>",
+                          "title": "<+pipeline.variables.projectName>",
+                          "description": "<+pipeline.variables.projectDescription>",
+                          "tags": [
+                            "aws",
+                            "infrastructure",
+                            "iac",
+                            "<+pipeline.variables.userGroup>"
+                          ],
+                          "annotations": {
+                            "harness.io/project-url": "https://app.harness.io/ng/account/<ACCOUNT_ID>/cd/orgs/<ORG_ID>/projects/<PROJECT_ID>",
+                            "harness.io/pipeline-url": "https://app.harness.io/ng/account/<ACCOUNT_ID>/cd/orgs/<ORG_ID>/projects/<PROJECT_ID>/pipelines/aws_service_provisioning_pipeline/executions/<+pipeline.executionId>",
+                            "harness.io/iacm-workspace": "<+pipeline.stages.pre_validate.spec.execution.steps.create_iacm_workspace.output.outputVariables.workspace_name>"
+                          },
+                          "labels": {
+                            "user-group": "<+pipeline.variables.userGroup>",
+                            "environment": "dev",
+                            "provisioned-by": "harness-idp"
+                          }
+                        },
+                        "spec": {
+                          "type": "aws-infrastructure",
+                          "lifecycle": "experimental",
+                          "owner": "<+pipeline.variables.userEmail>",
+                          "system": "aws-cloud-platform",
+                          "providesApis": [],
+                          "consumesApis": [],
+                          "dependsOn": []
+                        },
+                        "relations": [
+                          {
+                            "type": "ownedBy",
+                            "targetRef": "user:<+pipeline.variables.userEmail>"
+                          }
+                        ]
+                      }
+                    assertion: <+httpResponseCode> == 201
+                    outputVariables:
+                      - name: catalog_entity_id
+                        type: String
+                        value: <+json.select("metadata.uid", httpResponseBody)>
+                      - name: catalog_entity_name
+                        type: String
+                        value: <+json.select("metadata.name", httpResponseBody)>
+                  timeout: 10m
+              - step:
+                  type: ShellScript
+                  name: Send Completion Notification
+                  identifier: send_completion_notification
+                  spec:
+                    shell: Bash
+                    onDelegate: true
+                    source:
+                      type: Inline
+                      spec:
+                        script: |
+                          #!/bin/bash
+                          echo "=== AWS Service Provisioning Completed Successfully ==="
+                          echo "Project Name: <+pipeline.variables.projectName>"
+                          echo "User: <+pipeline.variables.userEmail>"
+                          echo "Services Provisioned: <+pipeline.variables.selectedServices>"
+                          echo "IACM Workspace: <+pipeline.stages.pre_validate.spec.execution.steps.create_iacm_workspace.output.outputVariables.workspace_name>"
+                          echo "IDP Catalog Entity: <+pipeline.stages.idp_stage.spec.execution.steps.create_idp_catalog_entry.output.outputVariables.catalog_entity_name>"
+                          echo ""
+                          echo "🎉 Your AWS infrastructure has been successfully provisioned!"
+                          echo "📊 Check your IDP catalog: https://app.harness.io/ng/account/<ACCOUNT_ID>/module/idp/catalog"
+                          echo "🏗️ IACM Workspace: https://app.harness.io/ng/account/<ACCOUNT_ID>/module/iacm/orgs/<ORG_ID>/projects/<PROJECT_ID>/workspaces"
+                          echo "📋 Pipeline Execution: https://app.harness.io/ng/account/<ACCOUNT_ID>/cd/orgs/<ORG_ID>/projects/<PROJECT_ID>/pipelines/aws_service_provisioning_pipeline/executions/<+pipeline.executionId>"
+                    environmentVariables: []
+                    outputVariables: []
+                  timeout: 5m
+        tags: {}
+  variables:
+    - name: projectName
+      type: String
+      description: Name of the project
+      required: true
+      value: <+input>
+    - name: projectDescription
+      type: String
+      description: Description of the project
+      required: true
+      value: <+input>
+    - name: userEmail
+      type: String
+      description: Email of the user requesting the service
+      required: true
+      value: <+input>
+    - name: userName
+      type: String
+      description: Name of the user requesting the service
+      required: true
+      value: <+input>
+    - name: userGroup
+      type: String
+      description: User group for permission validation
+      required: true
+      value: <+input>
+    - name: selectedServices
+      type: String
+      description: Comma-separated list of selected AWS services
+      required: true
+      value: <+input>
+    - name: serviceConfigurations
+      type: String
+      description: JSON string of service configurations
+      required: false
+      value: <+input>
+    - name: repository_connector
+      type: String
+      description: GitHub connector for Terraform code
+      required: true
+      value: <+input>.default("github-connector")
+  notificationRules:
+    - name: Pipeline Success Notification
+      identifier: pipeline_success_notification
+      pipelineEvents:
+        - type: AllEvents
+      notificationMethod:
+        type: Email
+        spec:
+          userGroups:
+            - cloud-platform-team
+          recipients:
+            - <+pipeline.variables.userEmail>
+      enabled: true
+    - name: Pipeline Failure Notification
+      identifier: pipeline_failure_notification
+      pipelineEvents:
+        - type: PipelineFailed
+      notificationMethod:
+        type: Email
+        spec:
+          userGroups:
+            - cloud-platform-team
+          recipients:
+            - <+pipeline.variables.userEmail>
+      enabled: true

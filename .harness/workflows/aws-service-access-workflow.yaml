@@ -70,6 +70,8 @@ spec:
           ui:options:
             path: proxy/github-raw/{{ parameters.githubOrg }}/{{ parameters.githubRepo }}/main/permissions-data/user-groups.json
             method: GET
+            setContextData:
+              selectedUG: value
             valueSelector: value
             labelSelector: label
     - title: AWS Service Selection
@@ -90,6 +92,7 @@ spec:
             method: GET
             dependencies:
               - selectedUserGroup
+            getContextData: {{formContext.selectedUG}}
             transformResponse: |
               (response) => {
                 const selectedUG = formData.selectedUserGroup;

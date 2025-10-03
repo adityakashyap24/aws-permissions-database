@@ -1,0 +1,34 @@
+This is what i want 
+
+Workflow IDP
+1. User Selects UG 
+2. User Selects the AWS Services - [ ec2 , s3 , rds ]
+3. Configuration for selected services pops up using if and dependsOn 
+4. All of those values are passed on to pipeline as json like lets say ec2 is selected ,
+then selectedService would be - [ ec2 ]
+Configuration key would have values as [{"name":"abc",....]
+
+Once this is done , then the harness pipeline would create a catalog entry of the same in harness idp and owner being the current user and etc
+and all the metadata
+
+
+Refer this 
+
+https://developer.harness.io/docs/internal-developer-portal/flows/workflows-tutorials/user-group-dynamic-picker/
+
+Create Harness Pipeline to do the following based oon above 
+
+3 Stages - Pre Validate , IACM Stage , IDP Stage 
+Stage 1
+1. Shell Script to check if the user and the ug which he selected is allowed to create the service of aws he requested for
+If no then return proper error code and if yes then continue the pipeline to next step 
+2. Create an IACM Workspace with the name and stuff and add tags to it using harness apis refer to apidocs.harness.io and 
+figure out the create iacm workspace api 
+
+Stage 2
+1. IACM Code Gets Planned and Applied over here
+
+Stage 3 
+1. Create the IDP Entity in Harness with proper metadata and stuff with Harness idp 2.0
+
+Refer to https://developer.harness.io/docs/internal-developer-portal/catalog/manage-catalog for more info 
