@@ -1,6 +1,6 @@
 [
     {
-        "UserGroupName": "ug1",
+        "UserGroupName": "HSF_Users",
         "UserEmails": ["emails"],
         "AWSServices": ["ec2","s3"]
     }
