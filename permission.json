@@ -1,7 +1,7 @@
 [
     {
         "UserGroupName": "HSF_Users",
-        "UserEmails": ["aditya.kashyap@harness.io"],
+        "UserEmails": ["aditya.kashyap+1@harness.io"],
         "AWSServices": ["ec2","s3"]
     }
 ]
